@@ -32,6 +32,7 @@ ARGUMENTS:
   -u   Username
   -p   Password
   -h   Hostname
+  -d   Destination
 
 EOF
 }
@@ -42,6 +43,7 @@ while getopts ":u:p:h:" opt ; do
     u ) MYSQLUSER=$OPTARG ;;
     p ) MYSQLPASS=$OPTARG ;;
     h ) MYSQLHOST=$OPTARG ;;
+    d ) MYSQL_BACKUP_DEST=$OPTARG ;;
 
     * ) echo \n $usage
       exit 1 ;;
@@ -49,14 +51,11 @@ while getopts ":u:p:h:" opt ; do
 done
 
 # Make sure the user has specified all the required attributes
-if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] ) ; then
+if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] || [ -z "$MYSQL_BACKUP_DEST" ] ) ; then
   echo ERROR: "You must specify a mysql username, password, and host."
   usage
   exit 1
 fi
-
-echo "Working properly"
-exit 1
 
 # ------------------------------------------------
 #
@@ -68,16 +67,6 @@ exit 1
 MYSQL="$(which mysql)"
 MYSQLDUMP="$(which mysqldump)"
 
-# BCK 2009_05_15 - Removing the parts of this script that chown/root the backup
-# directory. This complicates things to much for right now, although it might be
-# a good idea in the future
-
-# Main directory where backup will be stored
-MYSQL_BACKUP_DEST="$BACKUP_DEST/mysql"
-
-# Get hostname
-HOST="$(hostname)"
-
 # Get data in dd-mm-yyyy format
 NOW="$(date "+%Y_%m_%d_%H_%M")"
 
@@ -87,6 +76,7 @@ FILE=""
 DBS=""
 
 # DO NOT BACKUP these databases
+# TODO Make this an argument in the future
 IGNORE="test"
 
 [ ! -d $MYSQL_BACKUP_DEST ] && mkdir -p $MYSQL_BACKUP_DEST || :
