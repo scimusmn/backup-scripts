@@ -81,13 +81,6 @@ IGNORE="test"
 
 [ ! -d $MYSQL_BACKUP_DEST ] && mkdir -p $MYSQL_BACKUP_DEST || :
 
-# BCK 2009_05_15 - Removing the parts of this script that chown/root the backup
-# directory. This complicates things to much for right now, although it might be
-# a good idea in the future
-# Only root can access it!
-#$CHOWN 0.0 -R $DEST
-#$CHMOD 0600 $DEST
-
 # Get all database list first
 DBS="$($MYSQL -u $MyUSER -h $MyHOST -p$MyPASS -Bse 'show databases')"
 
