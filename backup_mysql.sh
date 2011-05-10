@@ -17,15 +17,33 @@ CHMOD="$(which chmod)"
 
 BACKUP_DEST=''
 
+# Get the command line arguments.
+while getopts ":u:p:h:" opt ; do
+  case $opt in
+    u ) MYSQLUSER=$OPTARG ;;
+    p ) MYSQLPASS=$OPTARG ;;
+    h ) MYSQLHOST=$OPTARG ;;
+
+    * ) echo \n $usage
+      exit 1 ;;
+  esac
+done
+
+# Make sure the user has specified all the required attributes
+if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] ) ; then
+  echo ERROR: "You must specify a mysql username, password, and host."
+  usage
+  exit 1
+fi
+
+echo "Working properly"
+exit 1
+
 # ------------------------------------------------
 #
 # Backup MYSQL databases
 #
 # ------------------------------------------------
-
-MyUSER=""                # USERNAME
-MyPASS=""      # PASSWORD
-MyHOST="localhost"           # Hostname
 
 # Linux bin paths, change this if it can't be autodetected via which command
 MYSQL="$(which mysql)"
