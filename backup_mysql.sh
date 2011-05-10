@@ -15,34 +15,6 @@ ECHO="$(which echo)"
 CHOWN="$(which chown)"
 CHMOD="$(which chmod)"
 
-# ------------------------------------------------
-#
-# Mount the Exhibit Projects SAMBA share
-# This is where backups will be stored
-#
-# ------------------------------------------------
-
-# Path to backup destination
-# DEST_SERVER=""
-# DEST_VOLUME=""
-#
-# No trailing slash
-# DEST_MOUNT_DESTINATION=""
-
-# if [[ ! -d $DEST_MOUNT_DESTINATION ]]; then
-  # mkdir $DEST_MOUNT_DESTINATION
-# fi
-
-# No leading or trailing slash
-# DEST_PATH=""
-# DEST_USER=""
-
-# echo 'Connecting the SMM fileserver. Password request will be for SMM domain password'
-# mount_smbfs //$BACKUP_USER@$BACKUP_SERVER/$BACKUP_VOLUME $MOUNT_DESTINATION
-
-# DEST=$MOUNT_DESTINATION/$BACKUP_PATH
-
-# Backup destination. No trailing slash
 BACKUP_DEST=''
 
 # ------------------------------------------------
