@@ -1,4 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env sh
+
+############################################################
+# backup_mysql.sh
+#
+# A script to backup all mysql tables on a given server into
+# seperate .sql files and an optional .gz archive.
+#
+# Inspiration from:
+# http://bash.cyberciti.biz/backup/backup-mysql-database-server-2/
+############################################################
 
 GZIP="$(which gzip)"
 ECHO="$(which echo)"
@@ -15,7 +25,7 @@ CHMOD="$(which chmod)"
 # Path to backup destination
 # DEST_SERVER=""
 # DEST_VOLUME=""
-# 
+#
 # No trailing slash
 # DEST_MOUNT_DESTINATION=""
 
@@ -44,44 +54,44 @@ BACKUP_DEST=''
 MyUSER=""                # USERNAME
 MyPASS=""      # PASSWORD
 MyHOST="localhost"           # Hostname
- 
+
 # Linux bin paths, change this if it can't be autodetected via which command
 MYSQL="$(which mysql)"
 MYSQLDUMP="$(which mysqldump)"
 
 # BCK 2009_05_15 - Removing the parts of this script that chown/root the backup
-# directory. This complicates things to much for right now, although it might be 
+# directory. This complicates things to much for right now, although it might be
 # a good idea in the future
 
 # Main directory where backup will be stored
 MYSQL_BACKUP_DEST="$BACKUP_DEST/mysql"
- 
+
 # Get hostname
 HOST="$(hostname)"
- 
+
 # Get data in dd-mm-yyyy format
 NOW="$(date "+%Y_%m_%d_%H_%M")"
- 
+
 # File to store current backup file
 FILE=""
 # Store list of databases
 DBS=""
- 
+
 # DO NOT BACKUP these databases
 IGNORE="test"
- 
+
 [ ! -d $MYSQL_BACKUP_DEST ] && mkdir -p $MYSQL_BACKUP_DEST || :
- 
+
 # BCK 2009_05_15 - Removing the parts of this script that chown/root the backup
-# directory. This complicates things to much for right now, although it might be 
+# directory. This complicates things to much for right now, although it might be
 # a good idea in the future
 # Only root can access it!
 #$CHOWN 0.0 -R $DEST
 #$CHMOD 0600 $DEST
- 
+
 # Get all database list first
 DBS="$($MYSQL -u $MyUSER -h $MyHOST -p$MyPASS -Bse 'show databases')"
- 
+
 for db in $DBS
 do
     skipdb=-1
@@ -92,7 +102,7 @@ do
       [ "$db" == "$i" ] && skipdb=1 || :
   done
     fi
- 
+
     if [ "$skipdb" == "-1" ] ; then
   FILE="$MYSQL_BACKUP_DEST/$db.$HOST.$NOW.gz"
   # do all inone job in pipe,
