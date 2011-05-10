@@ -17,6 +17,25 @@ CHMOD="$(which chmod)"
 
 BACKUP_DEST=''
 
+# Usage description
+usage ()
+{
+cat << EOF
+USAGE: $0 arguments
+
+This script makes mysql backups of all tables
+
+ARGUMENTS:
+   ?   Display this help.
+
+       ALL ARGUMENTS ARE REQUIRED
+  -u   Username
+  -p   Password
+  -h   Hostname
+
+EOF
+}
+
 # Get the command line arguments.
 while getopts ":u:p:h:" opt ; do
   case $opt in
