@@ -81,29 +81,26 @@ IGNORE="test"
 
 [ ! -d $MYSQL_BACKUP_DEST ] && mkdir -p $MYSQL_BACKUP_DEST || :
 
-# Get all database list first
-DBS="$($MYSQL -u $MyUSER -h $MyHOST -p$MyPASS -Bse 'show databases')"
+# Get a list of all the databases
+DBS="$($MYSQL -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS -Bse 'show databases')"
 
+# mysqldump each database individualy
 for db in $DBS
 do
-    skipdb=-1
-    if [ "$IGNORE" != "" ];
-    then
-  for i in $IGNORE
-  do
+  skipdb=-1
+  if [ "$IGNORE" != "" ]; then
+    for i in $IGNORE
+    do
       [ "$db" == "$i" ] && skipdb=1 || :
-  done
-    fi
+    done
+  fi
 
-    if [ "$skipdb" == "-1" ] ; then
-  FILE="$MYSQL_BACKUP_DEST/$db.$HOST.$NOW.gz"
-  # do all inone job in pipe,
-  # connect to mysql using mysqldump for select mysql database
-  # and pipe it out to gz file in backup dir :)
-        $MYSQLDUMP -u $MyUSER -h $MyHOST -p$MyPASS $db | $GZIP -9 > $FILE
-        $ECHO "Table backed up : $db"
-        # move to file server
-        #mv $FILE $MYSQL_BACKUP_DEST
-    fi
+  if [ "$skipdb" == "-1" ] ; then
+    FILE="$MYSQL_BACKUP_DEST/$db.$HOST.$NOW.gz"
+    # do all inone job in pipe,
+    # connect to mysql using mysqldump for select mysql database
+    # and pipe it out to gz file in backup dir :)
+    $MYSQLDUMP -u $MyUSER -h $MyHOST -p$MyPASS $db | $GZIP -9 > $FILE
+    $ECHO "Table backed up : $db"
+  fi
 done
-umount $MOUNT_DESTINATION
