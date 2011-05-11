@@ -38,7 +38,7 @@ EOF
 }
 
 # Get the command line arguments.
-while getopts ":u:p:h:" opt ; do
+while getopts ":u:p:h:d:" opt ; do
   case $opt in
     u ) MYSQLUSER=$OPTARG ;;
     p ) MYSQLPASS=$OPTARG ;;
@@ -56,7 +56,6 @@ if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] || [ -z "
   usage
   exit 1
 fi
-
 # ------------------------------------------------
 #
 # Backup MYSQL databases
@@ -100,8 +99,15 @@ do
 
   if [ "$skipdb" == "-1" ] ; then
     FILE="$MYSQL_BACKUP_DEST/$db.$MYSQLHOST.$NOW.gz"
-    # mysqldump and pipe it to gzip
-    $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS $db | $GZIP -9 > $FILE
+    if ( [ "$db" = "information_schema" ] || [ "$db" = "performance_schema" ] ); then
+      # Add this skip lock tables flag for backing up the
+      # schema tables. This is required by MySQL after 5.1.38
+      echo "Special information schema backup"
+      $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS --skip-lock-tables $db | $GZIP -9 > $FILE
+    else
+      # mysqldump and pipe it to gzip
+      $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS $db | $GZIP -9 > $FILE
+    fi
     $ECHO "Table backed up : $db"
   fi
 done
