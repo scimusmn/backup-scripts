@@ -65,7 +65,7 @@ while getopts ":aru:p:h:d:" opt ; do
   esac
 done
 
-# Make sure the user has specified at least backup mode
+# Make sure the user has specified at least one backup mode
 if ( [ -z "$ARCHIVE_METHOD" ] && [ -z "$RSYNC_METHOD" ] ) ; then
   echo ERROR: "You must specify a backup mode. Either -a archive or -r rsync method."
   usage
