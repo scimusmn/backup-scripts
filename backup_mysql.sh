@@ -28,6 +28,19 @@ This script makes mysql backups of all tables
 ARGUMENTS:
    ?   Display this help.
 
+       SELECT AN OPERATION MODE
+       Select one of these arguments to define how the
+       script will operate.
+  -a   Archive mode
+       mysqldumps are archived as timestamped, gunziped files. This
+       script will not overwrite old versions of the backups.
+  -r   rsync mode ***BEWARE***
+       In this mode, the script ***will erase everything*** in your
+       destination folder and then save gunziped dumps of each of
+       your databases. This mode is designed so that you can rsync
+       this folder off to another server to get a current snapshot
+       of your database.
+
        REQUIRED ARGUMENTS
   -u   Username
   -p   Password
@@ -38,8 +51,10 @@ EOF
 }
 
 # Get the command line arguments.
-while getopts ":u:p:h:d:" opt ; do
+while getopts ":aru:p:h:d:" opt ; do
   case $opt in
+    a ) ARCHIVE_METHOD=TRUE ;;
+    r ) RSYNC_METHOD=TRUE ;;
     u ) MYSQLUSER=$OPTARG ;;
     p ) MYSQLPASS=$OPTARG ;;
     h ) MYSQLHOST=$OPTARG ;;
@@ -49,6 +64,20 @@ while getopts ":u:p:h:d:" opt ; do
       exit 1 ;;
   esac
 done
+
+# Make sure the user has specified at least backup mode
+if ( [ -z "$ARCHIVE_METHOD" ] && [ -z "$RSYNC_METHOD" ] ) ; then
+  echo ERROR: "You must specify a backup mode. Either -a archive or -r rsync method."
+  usage
+  exit 1
+fi
+
+# Make sure the user hasn't specified two backup sources
+if ( [ "$ARCHIVE_METHOD" ] && [ "$RSYNC_METHOD" ] ) ; then
+  echo ERROR: "Only supply one backup mode. Either -a archive or -r rsync method. Not both."
+  usage
+  exit 1
+fi
 
 # Make sure the user has specified all the required attributes
 if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] || [ -z "$MYSQL_BACKUP_DEST" ] ) ; then
@@ -80,12 +109,19 @@ IGNORE="test"
 
 [ ! -d $MYSQL_BACKUP_DEST ] && mkdir -p $MYSQL_BACKUP_DEST || :
 
+# If you are using the rsync method, delete any existing files
+# in the backup destination.
+if [ $RSYNC_METHOD ]; then
+  find $MYSQL_BACKUP_DEST -type f -exec rm {} \;
+fi
+
 # Get a list of all the databases
 # -B (force each table onto a new line),
 # -s (omit the table formatting),
 # -e (execute a mysql command)
 DBS="$($MYSQL -u $MYSQLUSER -p$MYSQLPASS -h $MYSQLHOST -Bse 'show databases')"
 
+echo "here"
 # mysqldump each database individualy
 for db in $DBS
 do
@@ -98,15 +134,21 @@ do
   fi
 
   if [ "$skipdb" = "-1" ] ; then
-    FILE="$MYSQL_BACKUP_DEST/$db.$MYSQLHOST.$NOW.gz"
+    # Don't write the date into the filename for the rsync mode
+    if [ $ARCHIVE_METHOD ]; then
+      FILE="$MYSQL_BACKUP_DEST/$db.$MYSQLHOST.$NOW.gz"
+    elif [ $RSYNC_METHOD ]; then
+      FILE="$MYSQL_BACKUP_DEST/$db.$MYSQLHOST.gz"
+    fi
+
     if ( [ "$db" = "information_schema" ] || [ "$db" = "performance_schema" ] ); then
       # Add this skip lock tables flag for backing up the
       # schema tables. This is required by MySQL after 5.1.38
-      $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS --skip-lock-tables $db | $GZIP -9 > $FILE
-    else
-      # mysqldump and pipe it to gzip
-      $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS $db | $GZIP -9 > $FILE
+      MYSQLDUMPARGS="--skip-lock-tables "
     fi
+
+    # mysqldump and pipe it to gzip
+    $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS $MYSQLDUMPARGS$db | $GZIP -9 > $FILE
     $ECHO "Table backed up : $db"
   fi
 done
