@@ -85,17 +85,18 @@ if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] || [ -z "
   usage
   exit 1
 fi
-# ------------------------------------------------
+
+############################################################
 #
 # Backup MYSQL databases
 #
-# ------------------------------------------------
+############################################################
 
 # Linux bin paths, change this if it can't be autodetected via which command
 MYSQL="$(which mysql)"
 MYSQLDUMP="$(which mysqldump)"
 
-# Get data in dd-mm-yyyy format
+# For filename datestamps
 NOW="$(date "+%Y_%m_%d_%H_%M")"
 
 # File to store current backup file
@@ -121,7 +122,6 @@ fi
 # -e (execute a mysql command)
 DBS="$($MYSQL -u $MYSQLUSER -p$MYSQLPASS -h $MYSQLHOST -Bse 'show databases')"
 
-echo "here"
 # mysqldump each database individualy
 for db in $DBS
 do
