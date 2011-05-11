@@ -4,7 +4,7 @@
 # backup_mysql.sh
 #
 # A script to backup all mysql tables on a given server into
-# seperate .sql files and an optional .gz archive.
+# seperate .sql.gz files
 #
 # Inspiration from:
 # http://bash.cyberciti.biz/backup/backup-mysql-database-server-2/
@@ -28,7 +28,7 @@ This script makes mysql backups of all tables
 ARGUMENTS:
    ?   Display this help.
 
-       ALL ARGUMENTS ARE REQUIRED
+       REQUIRED ARGUMENTS
   -u   Username
   -p   Password
   -h   Hostname
@@ -82,7 +82,10 @@ IGNORE="test"
 [ ! -d $MYSQL_BACKUP_DEST ] && mkdir -p $MYSQL_BACKUP_DEST || :
 
 # Get a list of all the databases
-DBS="$($MYSQL -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS -Bse 'show databases')"
+# -B (force each table onto a new line),
+# -s (omit the table formatting),
+# -e (execute a mysql command)
+DBS="$($MYSQL -u $MYSQLUSER -p$MYSQLPASS -h $MYSQLHOST -Bse 'show databases')"
 
 # mysqldump each database individualy
 for db in $DBS
@@ -96,11 +99,9 @@ do
   fi
 
   if [ "$skipdb" == "-1" ] ; then
-    FILE="$MYSQL_BACKUP_DEST/$db.$HOST.$NOW.gz"
-    # do all inone job in pipe,
-    # connect to mysql using mysqldump for select mysql database
-    # and pipe it out to gz file in backup dir :)
-    $MYSQLDUMP -u $MyUSER -h $MyHOST -p$MyPASS $db | $GZIP -9 > $FILE
+    FILE="$MYSQL_BACKUP_DEST/$db.$MYSQLHOST.$NOW.gz"
+    # mysqldump and pipe it to gzip
+    $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS $db | $GZIP -9 > $FILE
     $ECHO "Table backed up : $db"
   fi
 done
