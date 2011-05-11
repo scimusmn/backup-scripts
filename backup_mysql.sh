@@ -93,16 +93,15 @@ do
   if [ "$IGNORE" != "" ]; then
     for i in $IGNORE
     do
-      [ "$db" == "$i" ] && skipdb=1 || :
+      [ "$db" = "$i" ] && skipdb=1 || :
     done
   fi
 
-  if [ "$skipdb" == "-1" ] ; then
+  if [ "$skipdb" = "-1" ] ; then
     FILE="$MYSQL_BACKUP_DEST/$db.$MYSQLHOST.$NOW.gz"
     if ( [ "$db" = "information_schema" ] || [ "$db" = "performance_schema" ] ); then
       # Add this skip lock tables flag for backing up the
       # schema tables. This is required by MySQL after 5.1.38
-      echo "Special information schema backup"
       $MYSQLDUMP -u $MYSQLUSER -h $MYSQLHOST -p$MYSQLPASS --skip-lock-tables $db | $GZIP -9 > $FILE
     else
       # mysqldump and pipe it to gzip
