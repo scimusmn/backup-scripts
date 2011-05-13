@@ -12,10 +12,8 @@
 
 GZIP="$(which gzip)"
 ECHO="$(which echo)"
-CHOWN="$(which chown)"
-CHMOD="$(which chmod)"
-
-BACKUP_DEST=''
+MYSQL="$(which mysql)"
+MYSQLDUMP="$(which mysqldump)"
 
 # Usage description
 usage ()
@@ -91,10 +89,6 @@ fi
 # Backup MYSQL databases
 #
 ############################################################
-
-# Linux bin paths, change this if it can't be autodetected via which command
-MYSQL="$(which mysql)"
-MYSQLDUMP="$(which mysqldump)"
 
 # For filename datestamps
 NOW="$(date "+%Y_%m_%d_%H_%M")"
