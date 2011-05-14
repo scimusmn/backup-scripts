@@ -14,6 +14,10 @@
 # https://help.ubuntu.com/8.04/serverguide/C/backups-shellscripts-rotation.html
 ############################################################
 
+ECHO="$(which echo)"
+TAR="$(which tar)"
+RSYNC="$(which rsync)"
+
 # When should we make the daily backup - 24 hour time
 DAILY_TIME=03
 # When should we make the weekly backup - Sunday(7)
@@ -67,21 +71,21 @@ while getopts ":r:l:t:n:h:d:w:m:" opt ; do
     w ) WEEKLY_COUNT=$(($OPTARG+1)) ;;
     m ) MONTHLY_COUNT=$(($OPTARG+1)) ;;
 
-    * ) echo \n $usage
+    * ) $ECHO \n $usage
       exit 1 ;;
   esac
 done
 
 # Make sure the user has specified at least one backup source
 if ( [ -z "$REMOTE_SOURCE" ] && [ -z "$LOCAL_SOURCE_PATH" ] ) ; then
-  echo ERROR: "You must specify either a remote or local source -r or -l"
+  $ECHO ERROR: "You must specify either a remote or local source -r or -l"
   usage
   exit 1
 fi
 
 # Make sure the user hasn't specified two backup sources
 if ( [ "$REMOTE_SOURCE" ] && [ "$LOCAL_SOURCE_PATH" ] ) ; then
-  echo ERROR: "You must specify either a remote or local source -r or -l. Not both."
+  $ECHO ERROR: "You must specify either a remote or local source -r or -l. Not both."
   usage
   exit 1
 fi
@@ -89,7 +93,7 @@ fi
 # Check for required arguments
 if ( [ -z "$DEST_PATH" ] || [ -z $ARCHIVE_NAME ] || [ -z "$HOURLY_COUNT" ] || [ -z "$DAILY_COUNT" ] || [ -z "$WEEKLY_COUNT" ] || [ -z "$MONTHLY_COUNT" ] )
 then
-  echo ERROR: "-t, -n, -h, -d, -w, -m are not optional.\n"
+  $ECHO ERROR: "-t, -n, -h, -d, -w, -m are not optional.\n"
   usage
   exit 1
 fi
@@ -97,7 +101,7 @@ fi
 ############################################################
 # rsync files with local backup
 ############################################################
-echo 'Syncing the backup with the server'
+$ECHO 'Syncing the backup with the server'
 
 # rsync the files with these possible options
 #   -a (archive) Tells rsync to copy over, times, groups, symlinks, and traverses directories
@@ -106,19 +110,19 @@ echo 'Syncing the backup with the server'
 #   -P (partial and progress) Save partially transfered files, and show transfer progress
 #   -e ssh Use SSH to do the transfer
 if [ "$REMOTE_SOURCE" ] ; then
-  rsync -avz -P -e ssh $REMOTE_SOURCE $DEST_PATH
+  $RSYNC -avz -P -e ssh $REMOTE_SOURCE $DEST_PATH
   # Get the name of the local folder where the rsync'ed files live
   # This is used when we archive this later.
   RSYNC_FOLDER=${REMOTE_SOURCE##*/}
 elif [ "$LOCAL_SOURCE_PATH" ] ; then
-  rsync -avz -P $LOCAL_SOURCE_PATH $DEST_PATH
+  $RSYNC -avz -P $LOCAL_SOURCE_PATH $DEST_PATH
   RSYNC_FOLDER=${LOCAL_SOURCE_PATH##*/}
 fi
 
 ############################################################
 # Create grandfather, father, son snapshots
 ############################################################
-echo 'Creating a snapshot of the backup.'
+$ECHO 'Creating a snapshot of the backup.'
 # Current date
 DOM=$(date +%d)
 
@@ -126,7 +130,7 @@ DOM=$(date +%d)
 DOW=$(date +%u)
 
 # The last day of this month
-LAST_DOM=$(echo $(cal) | awk '{print $NF}')
+LAST_DOM=$($ECHO $(cal) | awk '{print $NF}')
 
 # Current time, stored as a constant so we can use it at several points in the script
 DATE_STRING='+%Y_%m_%d_%H'
@@ -150,7 +154,7 @@ else
 fi
 
 # Create archive
-tar czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_FOLDER
+$TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_FOLDER
 
 ############################################################
 # Delete old snapshots
@@ -177,14 +181,14 @@ for backup in $DEST_PATH/* ; do
       "${DEST_PATH}/${ARCHIVE_NAME}_${DELETE_TIME}_${BAK_TYPE}.tgz"* )
         case "$backup" in
           # Don't delete the backup we just made no matter the settings
-          *"$NOW"* ) echo "Skipping the recently created backup." ;;
+          *"$NOW"* ) $ECHO "Skipping the recently created backup." ;;
           # If the file matches delete it
           * ) rm -rf $backup
             if [ $? = 0 ] ; then
-              echo "Old snapshot deleted"
+              $ECHO "Old snapshot deleted"
             else
               # Write in some email code here.
-              echo "Unable to delete the old snapshot. Exiting." ; exit $?
+              $ECHO "Unable to delete the old snapshot. Exiting." ; exit $?
             fi ;;
         esac ;;
       * ) ;;
