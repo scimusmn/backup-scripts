@@ -11,7 +11,7 @@
 ############################################################
 
 GZIP="$(which gzip)"
-ECHO="$(which echo)"
+ECHO="$(which $ECHO)"
 MYSQL="$(which mysql)"
 MYSQLDUMP="$(which mysqldump)"
 
@@ -58,28 +58,28 @@ while getopts ":aru:p:h:d:" opt ; do
     h ) MYSQLHOST=$OPTARG ;;
     d ) MYSQL_BACKUP_DEST=$OPTARG ;;
 
-    * ) echo \n $usage
+    * ) $ECHO \n $usage
       exit 1 ;;
   esac
 done
 
 # Make sure the user has specified at least one backup mode
 if ( [ -z "$ARCHIVE_METHOD" ] && [ -z "$RSYNC_METHOD" ] ) ; then
-  echo ERROR: "You must specify a backup mode. Either -a archive or -r rsync method."
+  $ECHO ERROR: "You must specify a backup mode. Either -a archive or -r rsync method."
   usage
   exit 1
 fi
 
 # Make sure the user hasn't specified two backup sources
 if ( [ "$ARCHIVE_METHOD" ] && [ "$RSYNC_METHOD" ] ) ; then
-  echo ERROR: "Only supply one backup mode. Either -a archive or -r rsync method. Not both."
+  $ECHO ERROR: "Only supply one backup mode. Either -a archive or -r rsync method. Not both."
   usage
   exit 1
 fi
 
 # Make sure the user has specified all the required attributes
 if ( [ -z "$MYSQLUSER" ] || [ -z "$MYSQLPASS" ] || [ -z "$MYSQLHOST" ] || [ -z "$MYSQL_BACKUP_DEST" ] ) ; then
-  echo ERROR: "You must specify a mysql username, password, and host."
+  $ECHO ERROR: "You must specify a mysql username, password, and host."
   usage
   exit 1
 fi
