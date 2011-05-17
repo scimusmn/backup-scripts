@@ -163,31 +163,35 @@ WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
 WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
 MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
 
-case "$BAK_TYPE" in
-  HOURLY ) DELETE_TIME=$HOURLY_DELETE_TIME ;;
-  DAILY ) DELETE_TIME=$DAILY_DELETE_TIME ;;
-  WEEKLY ) DELETE_TIME=$WEEKLY_DELETE_TIME ;;
-  MONTHLY ) DELETE_TIME=$MONTHLY_DELETE_TIME ;;
-esac
-
 # Loop through all of the files and delete the matching files
+declare -a files_to_delete
 for backup in $DEST_PATH/* ; do
   if [ -f $backup ] ; then
     case "$backup" in
-      "${DEST_PATH}/${ARCHIVE_NAME}_${DELETE_TIME}_${BAK_TYPE}.tgz"* )
-        case "$backup" in
-          # Don't delete the backup we just made no matter the settings
-          *"$NOW"* ) echo "Skipping the recently created backup." ;;
-          # If the file matches delete it
-          * ) rm -rf $backup
-            if [ $? = 0 ] ; then
-              echo "Old snapshot deleted"
-            else
-              # Write in some email code here.
-              echo "Unable to delete the old snapshot. Exiting." ; exit $?
-            fi ;;
-        esac ;;
-      * ) ;;
+      "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
+  echo "********************************************************************************"
+        files_to_delete=( ${files_to_delete[@]} $backup )
+        ;;
+      "${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
+        files_to_delete=( ${files_to_delete[@]} $backup )
+        ;;
+      "${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
+        files_to_delete=( ${files_to_delete[@]} $backup )
+        ;;
+      "${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
+        files_to_delete=( ${files_to_delete[@]} $backup )
+        ;;
     esac
+    echo "**********files to delete = "$files_to_delete[@]
+    for file_to_delete in ${files_to_delte[@]} ; do
+      echo "are em "$file_to_delete
+      if [ $? = 0 ] ; then
+        echo "Old snapshot deleted"
+      else
+        # Write in some email code here.
+        echo "Unable to delete the old snapshot. Exiting." ; exit $?
+      fi
+    done
+    #rm -rf $backup
   fi
 done
