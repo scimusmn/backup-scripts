@@ -15,7 +15,8 @@
 ############################################################
 
 # When should we make the daily backup - 24 hour time
-DAILY_TIME=03
+DAILY_TIME=10
+#DAILY_TIME=03
 # When should we make the weekly backup - Sunday(7)
 WEEKLY_DAY=6
 
@@ -164,34 +165,36 @@ WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
 MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
 
 # Loop through all of the files and delete the matching files
-declare -a files_to_delete
+# declare -a files_to_delete
 for backup in $DEST_PATH/* ; do
   if [ -f $backup ] ; then
     case "$backup" in
       "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
-  echo "********************************************************************************"
-        files_to_delete=( ${files_to_delete[@]} $backup )
+        files_to_delete=( "${files_to_delete[@]}" "$backup" )
         ;;
       "${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
-        files_to_delete=( ${files_to_delete[@]} $backup )
+        files_to_delete=( "${files_to_delete[@]}" "$backup" )
         ;;
       "${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
-        files_to_delete=( ${files_to_delete[@]} $backup )
+        files_to_delete=( "${files_to_delete[@]}" "$backup" )
         ;;
       "${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
-        files_to_delete=( ${files_to_delete[@]} $backup )
+        files_to_delete=( "${files_to_delete[@]}" "$backup" )
         ;;
     esac
-    echo "**********files to delete = "$files_to_delete[@]
-    for file_to_delete in ${files_to_delte[@]} ; do
-      echo "are em "$file_to_delete
-      if [ $? = 0 ] ; then
-        echo "Old snapshot deleted"
-      else
-        # Write in some email code here.
-        echo "Unable to delete the old snapshot. Exiting." ; exit $?
-      fi
-    done
     #rm -rf $backup
   fi
 done
+for file_to_delete in "${files_to_delete[@]}" ; do
+  echo "********** deleting this file **********"
+  echo $file_to_delete
+  if [ $? = 0 ] ; then
+    echo "Old snapshot deleted"
+  else
+    # Write in some email code here.
+    echo "Unable to delete the old snapshot. Exiting." ; exit $?
+  fi
+done
+echo "********** number of files to delete **********"
+echo ${#files_to_delete[@]}
+#echo "${files_to_delete[@]}"
