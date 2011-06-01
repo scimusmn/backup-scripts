@@ -11,7 +11,7 @@
 ############################################################
 
 GZIP="$(which gzip)"
-ECHO="$(which $ECHO)"
+ECHO="$(which echo)"
 MYSQL="$(which mysql)"
 MYSQLDUMP="$(which mysqldump)"
 
