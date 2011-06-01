@@ -107,7 +107,7 @@ IGNORE="test"
 # If you are using the rsync method, delete any existing files
 # in the backup destination.
 if [ $RSYNC_METHOD ]; then
-  find $MYSQL_BACKUP_DEST -type f -exec rm {} \;
+  find $MYSQL_BACKUP_DEST -type f -exec rm -rf {} \;
 fi
 
 # Get a list of all the databases
