@@ -42,15 +42,15 @@ ARGUMENTS:
        Example:
        /path/to/local/backup/source
 
+  -t   Backup destination path. Rsync and snapshot archives
+       will be stored here.
+
        OPTIONAL
   -a   Alternate backup destination if primary path isn't
        available.
        This is provided for when the local path is a mounted
        drive that may or may not exist at the time the script
        is run.
-
-  -t   Backup destination path. Rsync and snapshot archives
-       will be stored here.
 
   -n   A descriptive filename for the backup (no spaces)
        Example:
