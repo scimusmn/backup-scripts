@@ -45,6 +45,13 @@ ARGUMENTS:
   -t   Backup destination path. Rsync and snapshot archives
        will be stored here.
 
+       OPTIONAL
+  -a   Alternate backup destination if primary path isn't
+       available.
+       This is provided for when the local path is a mounted
+       drive that may or may not exist at the time the script
+       is run.
+
   -n   A descriptive filename for the backup (no spaces)
        Example:
        apache_config
@@ -57,11 +64,13 @@ EOF
 }
 
 # Get the command line arguments.
-while getopts ":r:l:t:n:h:d:w:m:" opt ; do
+while getopts ":r:l:t:a:n:h:d:w:m:" opt ; do
   case $opt in
     r ) REMOTE_SOURCE=$OPTARG ;;
     l ) LOCAL_SOURCE_PATH=$OPTARG ;;
     t ) DEST_PATH=$OPTARG ;;
+
+    a ) ALT_DEST_PATH=$OPTARG ;;
 
     # We add one here to delete the file that is one older
     # than the max count.
@@ -97,6 +106,26 @@ then
   usage
   exit 1
 fi
+
+############################################################
+# Check for the destination folder
+############################################################
+# :TODO: Check for the remote destination as well
+HOUSE_KEEPING=TRUE
+if [ ! -d $DEST_PATH ] ; then
+  $ECHO "The primary destination does not exist, switching to alternate."
+  if [ ! -d $ALT_DEST_PATH ] ; then
+    $ECHO ERROR: "The primary and alternate destinations are unavilable. Fatal error."
+    usage
+    exit 1
+  else
+    # Use the alternate destination for archiving.
+    DEST_PATH=$ALT_DEST_PATH
+    # When using the alternate paths, don't delete old backups
+    HOUSE_KEEPING=FALSE
+  fi
+fi
+
 
 ############################################################
 # rsync files with local backup
@@ -160,41 +189,45 @@ $TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_
 # Delete old snapshots
 ############################################################
 
-# Create the matching date strings X , days, weeks, months back
-HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
-DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
-WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
-WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
-MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
+# We skip house keeping if we are using the alternate backup
+# destination. See above.
+if ($HOUSE_KEEPING) ; then
+  # Create the matching date strings X , days, weeks, months back
+  HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
+  DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
+  WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
+  WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
+  MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
 
-# Loop through all of the files and populate an array of files to be deleted
-declare -a files_to_delete
-for backup in $DEST_PATH/* ; do
-  if [ -f $backup ] ; then
-    case "$backup" in
-      "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
-        files_to_delete=( "${files_to_delete[@]}" "$backup" )
-        ;;
-      "${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
-        files_to_delete=( "${files_to_delete[@]}" "$backup" )
-        ;;
-      "${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
-        files_to_delete=( "${files_to_delete[@]}" "$backup" )
-        ;;
-      "${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
-        files_to_delete=( "${files_to_delete[@]}" "$backup" )
-        ;;
-    esac
-  fi
-done
+  # Loop through all of the files and populate an array of files to be deleted
+  declare -a files_to_delete
+  for backup in $DEST_PATH/* ; do
+    if [ -f $backup ] ; then
+      case "$backup" in
+        "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
+          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          ;;
+        "${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
+          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          ;;
+        "${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
+          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          ;;
+        "${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
+          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          ;;
+      esac
+    fi
+  done
 
-# Delete files
-for file_to_delete in "${files_to_delete[@]}" ; do
-  rm -rf $file_to_delete
-  if [ $? = 0 ] ; then
-    echo "Old snapshot deleted"
-  else
-    # Write in some email code here.
-    echo "Unable to delete the old snapshot. Exiting." ; exit $?
-  fi
-done
+  # Delete files
+  for file_to_delete in "${files_to_delete[@]}" ; do
+    rm -rf $file_to_delete
+    if [ $? = 0 ] ; then
+      echo "Old snapshot deleted"
+    else
+      # Write in some email code here.
+      echo "Unable to delete the old snapshot. Exiting." ; exit $?
+    fi
+  done
+fi
