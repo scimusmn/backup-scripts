@@ -112,17 +112,17 @@ fi
 ############################################################
 # :TODO: Check for the remote destination as well
 HOUSE_KEEPING=TRUE
-if (! -d $DEST_PATH) ; then
+if [ ! -d $DEST_PATH ] ; then
   $ECHO "The primary destination does not exist, switching to alternate."
-  if (! -d $ALT_DEST_PATH) ; then
+  if [ ! -d $ALT_DEST_PATH ] ; then
     $ECHO ERROR: "The primary and alternate destinations are unavilable. Fatal error."
     usage
     exit 1
   else
     # Use the alternate destination for archiving.
-    DEST_PATH = $ALT_DEST_PATH
+    DEST_PATH=$ALT_DEST_PATH
     # When using the alternate paths, don't delete old backups
-    HOUSE_KEEPING = FALSE
+    HOUSE_KEEPING=FALSE
   fi
 fi
 
