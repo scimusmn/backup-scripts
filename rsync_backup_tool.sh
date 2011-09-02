@@ -64,7 +64,7 @@ EOF
 }
 
 # Get the command line arguments.
-while getopts ":r:l:t:n:h:d:w:m:" opt ; do
+while getopts ":r:l:t:a:n:h:d:w:m:" opt ; do
   case $opt in
     r ) REMOTE_SOURCE=$OPTARG ;;
     l ) LOCAL_SOURCE_PATH=$OPTARG ;;
