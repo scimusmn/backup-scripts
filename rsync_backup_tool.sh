@@ -124,6 +124,10 @@ if [ ! -d $DEST_PATH ] ; then
     # When using the alternate paths, don't delete old backups
     HOUSE_KEEPING=FALSE
   fi
+else
+  $ECHO "============================================================"
+  $ECHO "The primary desitnation exists using that."
+  $ECHO "============================================================"
 fi
 
 
