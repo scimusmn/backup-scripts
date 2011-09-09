@@ -53,14 +53,10 @@ if ( [ -z "$USER" ] || [ -z "$PASS" ] || [ -z "$DEST" ] ) ; then
   exit 1
 fi
 
-# the API returns only 30 repos per page, let's check the first 10 pages
-
-# Parse the JSON using grep
-# A bit dirty, but it works
+# Parse the JSON
 repos="$(curl -u "${USER}:${PASS}" ${API_URL}orgs/$ORG/repos | grep -Po '\"name\":.*?\",' | sed -n 's/.*\"\(.*\)\".*/\1/p')"
 for repo in $repos
 do
-
   repo=${repo}.git
   repo_address="git@github.com:$ORG/$repo"
   echo "============================================================"
