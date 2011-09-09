@@ -73,33 +73,3 @@ do
     git clone --mirror $repo_address $DEST/$repo
   fi
 done
-
-#repos=''
-#for i in `seq 1 10`
-#do
-    #rep="$(wget --quiet --post-data="login=${USER}&token=${API_TOKEN}" -O - ${API_URL}/repos/show/${USER}?page=$i | xmlstarlet sel -T -t -m '//repository' -v name -o ' ')"
-    #repos="$repos $rep"
-#done
-
-#[[ ! -d ${DEST} ]] && mkdir -p ${DEST}
-#cd ${DEST}
-
-#for repo in $repos;
-#do
-  #$ECHO $repo
-    #branches="$(wget --quiet --post-data="login=${USER}&token=${API_TOKEN}" -O - ${API_URL}/repos/show/${USER}/${repo}/branches | xmlstarlet sel -T -t -m '//branches/*' -v 'name()' -o ' ')"
-
-    #if [ ! -d ${repo} ]; then
-        #git clone -o github git@github.com:${USER}/${repo}.git ${repo}
-    #fi
-
-    #cd ${repo}
-    #for branch in $branches;
-    #do
-        #git branch --track ${branch} github/${branch} 2>/dev/null
-        #git checkout ${branch}
-        #git pull github ${branch}
-    #done
-    #cd ${DEST}
-#done
-
