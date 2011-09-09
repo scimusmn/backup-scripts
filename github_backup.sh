@@ -60,18 +60,17 @@ repos="$(curl -u "${USER}:${PASS}" ${API_URL}orgs/$ORG/repos | grep -Po '\"name\
 for repo in $repos
 do
 
-  repo_address="git@github.com:$ORG/$repo.git"
+  repo=${repo}.git
+  repo_address="git@github.com:$ORG/$repo"
   echo "============================================================"
   if [ -d $DEST/$repo ] ; then
-    echo "The $repo folder exists. I'll do a fresh pull."
+    echo "Fetching changes from $repo"
     cd $DEST/$repo
-
-    # do a git branch -a
-    # loop through it and do a git pull for each branch
-    git pull origin
+    # Fetch any changes
+    git fetch -q
   else
-    echo "The $repo folder doesn't exist. Doing a clone."
-    echo "git clone $repo_address $DEST/$repo"
+    echo "Creating a fresh mirror of $repo"
+    git clone --mirror $repo_address $DEST/$repo
   fi
 done
 
