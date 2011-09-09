@@ -11,7 +11,6 @@
 GZIP="$(which gzip)"
 ECHO="$(which echo)"
 API_URL=https://api.github.com/
-ORG=scimusmn
 
 # Usage description
 usage ()
@@ -28,16 +27,18 @@ ARGUMENTS:
        REQUIRED ARGUMENTS
   -u   GitHub username
   -p   GitHub password
+  -o   GitHub organizaton
   -d   Destination
 
 EOF
 }
 
 # Get the command line arguments.
-while getopts ":u:p:a:d:" opt ; do
+while getopts ":u:p:o:d:" opt ; do
   case $opt in
     u ) USER=$OPTARG ;;
     p ) PASS=$OPTARG ;;
+    o ) ORG=$OPTARG ;;
     d ) DEST=$OPTARG ;;
 
     * ) $ECHO \n $usage
