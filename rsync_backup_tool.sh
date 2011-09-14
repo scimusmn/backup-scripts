@@ -112,10 +112,14 @@ fi
 ############################################################
 # :TODO: Check for the remote destination as well
 HOUSE_KEEPING=TRUE
-if [ ! -d $DEST_PATH ] ; then
-  $ECHO "The primary destination does not exist, switching to alternate."
-  if [ ! -d $ALT_DEST_PATH ] ; then
+if [[ ! -d $DEST_PATH ]] ; then
+  $ECHO "------------------------------------------------------------"
+  $ECHO "The primary destination does not exist. Switching to alternate."
+  $ECHO "------------------------------------------------------------"
+  if [[ ! -d $ALT_DEST_PATH ]] ; then
+    $ECHO "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     $ECHO ERROR: "The primary and alternate destinations are unavilable. Fatal error."
+    $ECHO "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     usage
     exit 1
   else
@@ -124,6 +128,10 @@ if [ ! -d $DEST_PATH ] ; then
     # When using the alternate paths, don't delete old backups
     HOUSE_KEEPING=FALSE
   fi
+else
+  $ECHO "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  $ECHO "The primary desitnation exists. Using that."
+  $ECHO "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 fi
 
 
