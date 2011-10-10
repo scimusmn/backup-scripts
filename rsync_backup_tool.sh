@@ -211,6 +211,17 @@ if ($HOUSE_KEEPING) ; then
   declare -a files_to_delete
   for backup in $DEST_PATH/* ; do
     if [ -f $backup ] ; then
+
+      # Get just filename
+      filename=${backup##*/}
+      # Remove extension
+      name=${filename%.*}
+      # Get the filename backup type
+      backup_type=${name##*_}
+      # Get the backup date
+      backup_date=${name%_*}
+      backup_date=${backup_date:(-13)}
+
       case "$backup" in
         "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
           files_to_delete=( "${files_to_delete[@]}" "$backup" )
