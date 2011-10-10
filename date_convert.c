@@ -1,6 +1,7 @@
 /**
  * Convert date strings
- * Inspiration from - http://www.ioncannon.net/programming/33/using-strptime-to-parse-iso-8601-formated-timestamps/
+ * Inspiration from
+ * http://www.ioncannon.net/programming/33/using-strptime-to-parse-iso-8601-formated-timestamps/
  */
 
 #include <string.h>;
