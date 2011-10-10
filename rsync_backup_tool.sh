@@ -222,6 +222,16 @@ if ($HOUSE_KEEPING) ; then
       backup_date=${name%_*}
       backup_date=${backup_date:(-13)}
 
+      # If MONTHY, WEEKLY, DAILY
+      case "$backup_type" in
+      esac
+
+      # Convert the file date string to unix time
+      # Convert the delete time to unix time
+      # See if the file date is older than the delete time
+      # if so, add the file name to the file to the array of
+      # files to delete
+
       case "$backup" in
         "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
           files_to_delete=( "${files_to_delete[@]}" "$backup" )
