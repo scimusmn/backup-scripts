@@ -6,6 +6,7 @@
 
 #include <string.h>;
 #include <stdio.h>;
+#include <stdlib.h>
 #include <time.h>;
 
 void convert_iso8601(const char *time_string, int ts_len, struct tm *tm_data)
@@ -23,27 +24,57 @@ void convert_iso8601(const char *time_string, int ts_len, struct tm *tm_data)
   memset(&ctime, 0, sizeof(struct tm)); /* Memory handling */
 
   /* Convert a string to time values with a specific formatting */
-  strptime(temp, "%FT%T%z", &ctime);
+  strptime(temp, "%Y-%m-%dT%H:%M:%Sz", &ctime);
 
-  long ts = mktime(&ctime) - timezone;
+  long ts = mktime(&ctime);
+  /*long ts = mktime(&ctime) - timezone;*/
   localtime_r(&ts, tm_data);
 }
 
-int main()
+int main ( int argc, char *argv[] )
 {
-  /* Turn this into an argument to be submitted */
-  char date[] = "2006-03-28T16:49:29.000Z";
+  if ( argc != 2 )
+  {
+    /* Move usage into a usage funciton */
+    printf("Usage: %s datestring\n", argv[0]);
+  }
+  else
+  {
+    /* Turn this into an argument to be submitted */
+    char date[64];
+    strcpy(date, argv[1]);
+    printf("Date arg = %s\n", date);
 
-  struct tm tm;
-  memset(&tm, 0, sizeof(struct tm));
-  convert_iso8601(date, sizeof(date), &tm);
+    struct tm tm;
+    memset(&tm, 0, sizeof(struct tm));
 
-  /* Format and print date strings */
-  char datestring[128];
-  char timestamp[128];
-  strftime(datestring, sizeof(datestring), "%a, %d %b %Y %H:%M:%S %Z", &tm);
-  printf("Date: %s\n", datestring);
-  strftime(timestamp, sizeof(timestamp), "%s", &tm);
-  printf("Timestamp: %s\n", timestamp);
+    if (!strptime(date, "%Y-%m-%dT%H:%M:%Sz", &tm))
+    {
+      printf("Date format not correct.\n");
+      exit (1);
+    }
+    else
+    {
+      convert_iso8601(date, sizeof(date), &tm);
+
+      /* Format and print date strings */
+      char datestring[128];
+      char timestamp[128];
+      strftime(datestring, sizeof(datestring), "Day of the week = %a\n \
+          Date = %b %d, %Y\n \
+          Time = %H:%M:%S", &tm);
+
+      printf("%s\n", datestring);
+      strftime(timestamp, sizeof(timestamp), "%s", &tm);
+      printf("Timestamp = %s\n", timestamp);
+
+      /* Print the dates from tm_ variables */
+      /*printf("year: %d; month: %d; day: %d;\n", tm.tm_year, tm.tm_mon, tm.tm_mday);*/
+
+      /* Testing args */
+      /*printf("Argc = %i\n", argc);*/
+      /*printf("Argv 1 = %s\n", argv[1]);*/
+    }
+  }
 }
 
