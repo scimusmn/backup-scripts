@@ -72,13 +72,11 @@ while getopts ":r:l:t:a:n:h:d:w:m:" opt ; do
 
     a ) ALT_DEST_PATH=$OPTARG ;;
 
-    # We add one here to delete the file that is one older
-    # than the max count.
     n ) ARCHIVE_NAME=$OPTARG ;;
-    h ) HOURLY_COUNT=$(($OPTARG+1)) ;;
-    d ) DAILY_COUNT=$(($OPTARG+1)) ;;
-    w ) WEEKLY_COUNT=$(($OPTARG+1)) ;;
-    m ) MONTHLY_COUNT=$(($OPTARG+1)) ;;
+    h ) HOURLY_COUNT=$(($OPTARG)) ;;
+    d ) DAILY_COUNT=$(($OPTARG)) ;;
+    w ) WEEKLY_COUNT=$(($OPTARG)) ;;
+    m ) MONTHLY_COUNT=$(($OPTARG)) ;;
 
     * ) $ECHO \n $usage
       exit 1 ;;
