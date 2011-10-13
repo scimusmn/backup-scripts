@@ -221,25 +221,41 @@ if ($HOUSE_KEEPING) ; then
       snapshot_date=${name%_*}
       snapshot_date=${snapshot_date#*_}
       # Convert the file date string to unix time
-      # Convert the delete time to unix time
-      # See if the file date is older than the delete time
-      # if so, add the file name to the file to the array of
-      # files to delete
+      snapshot_timestamp=`date_convert $snapshot_date`
 
-      case "$backup" in
-        "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+      case "$snapshot_type" in
+        "HOURLY" )
+          delete_timestamp=`date_convert $HOURLY_DELETE_TIME`
           ;;
-        "${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+        "DAILY" )
+          delete_timestamp=`date_convert $DAILY_DELETE_TIME`
           ;;
-        "${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+        "WEEKLY" )
+          delete_timestamp=`date_convert $WEEKLY_DELETE_TIME`
           ;;
-        "${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+        "MONTHLY" )
+          delete_timestamp=`date_convert $MONTHLY_DELETE_TIME`
           ;;
       esac
+
+      if [ $snapshot_timestamp -lt $delete_timestamp ] ; then
+        files_to_delete=( "${files_to_delete[@]}" "$backup" )
+      fi
+
+      #case "$backup" in
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+      #esac
     fi
   done
 
