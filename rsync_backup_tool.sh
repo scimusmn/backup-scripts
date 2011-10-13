@@ -215,16 +215,11 @@ if ($HOUSE_KEEPING) ; then
       filename=${backup##*/}
       # Remove extension
       name=${filename%.*}
-      # Get the filename backup type
-      backup_type=${name##*_}
-      # Get the backup date
-      backup_date=${name%_*}
-      backup_date=${backup_date:(-13)}
-
-      # If MONTHY, WEEKLY, DAILY
-      case "$backup_type" in
-      esac
-
+      # Get the filename snapshot type
+      snapshot_type=${name##*_}
+      # Get the snapshot date
+      snapshot_date=${name%_*}
+      snapshot_date=${snapshot_date#*_}
       # Convert the file date string to unix time
       # Convert the delete time to unix time
       # See if the file date is older than the delete time
