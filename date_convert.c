@@ -24,7 +24,7 @@ void convert_iso8601(const char *time_string, int ts_len, struct tm *tm_data)
   memset(&ctime, 0, sizeof(struct tm)); /* Memory handling */
 
   /* Convert a string to time values with a specific formatting */
-  strptime(temp, "%Y-%m-%dT%H:%M:%Sz", &ctime);
+  strptime(temp, "%Y-%m-%dT%H:%M:%S%z", &ctime);
 
   long ts = mktime(&ctime);
   /*long ts = mktime(&ctime) - timezone;*/
