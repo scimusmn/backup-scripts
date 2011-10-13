@@ -48,7 +48,7 @@ int main ( int argc, char *argv[] )
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
 
-    if (!strptime(date, "%Y-%m-%dT%H:%M:%Sz", &tm))
+    if (!strptime(date, "%Y-%m-%dT%H:%M:%S%z", &tm))
     {
       printf("Date format not correct.\n");
       printf("Expects YYYY-MM-DDTHH:MM:SSz\n");
