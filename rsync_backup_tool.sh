@@ -72,13 +72,11 @@ while getopts ":r:l:t:a:n:h:d:w:m:" opt ; do
 
     a ) ALT_DEST_PATH=$OPTARG ;;
 
-    # We add one here to delete the file that is one older
-    # than the max count.
     n ) ARCHIVE_NAME=$OPTARG ;;
-    h ) HOURLY_COUNT=$(($OPTARG+1)) ;;
-    d ) DAILY_COUNT=$(($OPTARG+1)) ;;
-    w ) WEEKLY_COUNT=$(($OPTARG+1)) ;;
-    m ) MONTHLY_COUNT=$(($OPTARG+1)) ;;
+    h ) HOURLY_COUNT=$(($OPTARG)) ;;
+    d ) DAILY_COUNT=$(($OPTARG)) ;;
+    w ) WEEKLY_COUNT=$(($OPTARG)) ;;
+    m ) MONTHLY_COUNT=$(($OPTARG)) ;;
 
     * ) $ECHO \n $usage
       exit 1 ;;
@@ -170,7 +168,8 @@ DOW=$(date +%u)
 LAST_DOM=$($ECHO $(cal) | awk '{print $NF}')
 
 # Current time, stored as a constant so we can use it at several points in the script
-DATE_STRING='+%Y_%m_%d_%H'
+#DATE_STRING='+%Y_%m_%d_%H'
+DATE_STRING='+%Y-%m-%dT%H:%M:%S%z'
 NOW=$(date $DATE_STRING)
 CUR_HOUR=$(date +%H)
 
@@ -211,20 +210,52 @@ if ($HOUSE_KEEPING) ; then
   declare -a files_to_delete
   for backup in $DEST_PATH/* ; do
     if [ -f $backup ] ; then
-      case "$backup" in
-        "${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+
+      # Get just filename
+      filename=${backup##*/}
+      # Remove extension
+      name=${filename%.*}
+      # Get the filename snapshot type
+      snapshot_type=${name##*_}
+      # Get the snapshot date
+      snapshot_date=${name%_*}
+      snapshot_date=${snapshot_date#*_}
+      # Convert the file date string to unix time
+      snapshot_timestamp=`date_convert $snapshot_date`
+
+      case "$snapshot_type" in
+        "HOURLY" )
+          delete_timestamp=`date_convert $HOURLY_DELETE_TIME`
           ;;
-        "${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+        "DAILY" )
+          delete_timestamp=`date_convert $DAILY_DELETE_TIME`
           ;;
-        "${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+        "WEEKLY" )
+          delete_timestamp=`date_convert $WEEKLY_DELETE_TIME`
           ;;
-        "${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
-          files_to_delete=( "${files_to_delete[@]}" "$backup" )
+        "MONTHLY" )
+          delete_timestamp=`date_convert $MONTHLY_DELETE_TIME`
           ;;
       esac
+
+      if [ $snapshot_timestamp -lt $delete_timestamp ] ; then
+        files_to_delete=( "${files_to_delete[@]}" "$backup" )
+      fi
+
+      #case "$backup" in
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+        #"${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
+          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
+          #;;
+      #esac
     fi
   done
 
