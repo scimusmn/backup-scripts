@@ -51,6 +51,7 @@ int main ( int argc, char *argv[] )
     if (!strptime(date, "%Y-%m-%dT%H:%M:%Sz", &tm))
     {
       printf("Date format not correct.\n");
+      printf("Expects YYYY-MM-DDTHH:MM:SSz\n");
       exit (1);
     }
     else
