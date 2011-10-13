@@ -171,7 +171,7 @@ LAST_DOM=$($ECHO $(cal) | awk '{print $NF}')
 
 # Current time, stored as a constant so we can use it at several points in the script
 #DATE_STRING='+%Y_%m_%d_%H'
-DATE-STRING='+%Y-%m-%dT%H:%M:%Sz'
+DATE_STRING='+%Y-%m-%dT%H:%M:%S%z'
 NOW=$(date $DATE_STRING)
 CUR_HOUR=$(date +%H)
 
