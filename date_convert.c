@@ -43,7 +43,7 @@ int main ( int argc, char *argv[] )
     /* Turn this into an argument to be submitted */
     char date[64];
     strcpy(date, argv[1]);
-    printf("Date arg = %s\n", date);
+    /*printf("Date arg = %s\n", date);*/
 
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
@@ -51,7 +51,7 @@ int main ( int argc, char *argv[] )
     if (!strptime(date, "%Y-%m-%dT%H:%M:%S%z", &tm))
     {
       printf("Date format not correct.\n");
-      printf("Expects YYYY-MM-DDTHH:MM:SSz\n");
+      printf("Expects YYYY-MM-DDTHH:MM:SS-#### (-#### = Time zone offset)\n");
       exit (1);
     }
     else
@@ -65,9 +65,9 @@ int main ( int argc, char *argv[] )
           Date = %b %d, %Y\n \
           Time = %H:%M:%S", &tm);
 
-      printf("%s\n", datestring);
+      /*printf("%s\n", datestring);*/
       strftime(timestamp, sizeof(timestamp), "%s", &tm);
-      printf("Timestamp = %s\n", timestamp);
+      printf("%s\n", timestamp);
 
       /* Print the dates from tm_ variables */
       /*printf("year: %d; month: %d; day: %d;\n", tm.tm_year, tm.tm_mon, tm.tm_mday);*/
