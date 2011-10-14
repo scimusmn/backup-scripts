@@ -109,7 +109,6 @@ fi
 # Check for the destination folder
 ############################################################
 # :TODO: Check for the remote destination as well
-HOUSE_KEEPING=TRUE
 if [[ ! -d $DEST_PATH ]] ; then
   $ECHO "------------------------------------------------------------"
   $ECHO "The primary destination does not exist. Switching to alternate."
@@ -124,7 +123,6 @@ if [[ ! -d $DEST_PATH ]] ; then
     # Use the alternate destination for archiving.
     DEST_PATH=$ALT_DEST_PATH
     # When using the alternate paths, don't delete old backups
-    HOUSE_KEEPING=FALSE
   fi
 else
   $ECHO "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -196,77 +194,61 @@ $TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_
 # Delete old snapshots
 ############################################################
 
-# We skip house keeping if we are using the alternate backup
-# destination. See above.
-if ($HOUSE_KEEPING) ; then
-  # Create the matching date strings X , days, weeks, months back
-  HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
-  DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
-  WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
-  WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
-  MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
+# Create the matching date strings X , days, weeks, months back
+HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
+DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
+WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
+WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
+MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
 
-  # Loop through all of the files and populate an array of files to be deleted
-  declare -a files_to_delete
-  for backup in $DEST_PATH/* ; do
-    if [ -f $backup ] ; then
+# Loop through all of the files and populate an array of files to be deleted
+declare -a files_to_delete
+for backup in $DEST_PATH/* ; do
+  if [ -f $backup ] ; then
 
-      # Get just filename
-      filename=${backup##*/}
-      # Remove extension
-      name=${filename%.*}
-      # Get the filename snapshot type
-      snapshot_type=${name##*_}
-      # Get the snapshot date
-      snapshot_date=${name%_*}
-      snapshot_date=${snapshot_date#*_}
-      # Convert the file date string to unix time
-      snapshot_timestamp=`date_convert $snapshot_date`
+    # Get just filename
+    filename=${backup##*/}
+    # Remove extension
+    name=${filename%.*}
+    # Get the filename snapshot type
+    snapshot_type=${name##*_}
+    # Get the snapshot date
+    snapshot_date=${name%_*}
+    snapshot_date=${snapshot_date:(-24)}
 
-      case "$snapshot_type" in
-        "HOURLY" )
-          delete_timestamp=`date_convert $HOURLY_DELETE_TIME`
-          ;;
-        "DAILY" )
-          delete_timestamp=`date_convert $DAILY_DELETE_TIME`
-          ;;
-        "WEEKLY" )
-          delete_timestamp=`date_convert $WEEKLY_DELETE_TIME`
-          ;;
-        "MONTHLY" )
-          delete_timestamp=`date_convert $MONTHLY_DELETE_TIME`
-          ;;
-      esac
+    snapshot_date=${snapshot_date#*_}
+    # Convert the file date string to unix time
+    snapshot_timestamp=`date_convert $snapshot_date`
 
-      if [ $snapshot_timestamp -lt $delete_timestamp ] ; then
-        files_to_delete=( "${files_to_delete[@]}" "$backup" )
-      fi
+    case "$snapshot_type" in
+      "HOURLY" )
+        delete_timestamp=`date_convert $HOURLY_DELETE_TIME`
+        ;;
+      "DAILY" )
+        delete_timestamp=`date_convert $DAILY_DELETE_TIME`
+        ;;
+      "WEEKLY" )
+        delete_timestamp=`date_convert $WEEKLY_DELETE_TIME`
+        ;;
+      "MONTHLY" )
+        delete_timestamp=`date_convert $MONTHLY_DELETE_TIME`
+        ;;
+    esac
 
-      #case "$backup" in
-        #"${DEST_PATH}/${ARCHIVE_NAME}_${HOURLY_DELETE_TIME}_HOURLY.tgz"* )
-          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
-          #;;
-        #"${DEST_PATH}/${ARCHIVE_NAME}_${DAILY_DELETE_TIME}_DAILY.tgz"* )
-          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
-          #;;
-        #"${DEST_PATH}/${ARCHIVE_NAME}_${WEEKLY_DELETE_TIME}_WEEKLY.tgz"* )
-          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
-          #;;
-        #"${DEST_PATH}/${ARCHIVE_NAME}_${MONTHLY_DELETE_TIME}_MONTHLY.tgz"* )
-          #files_to_delete=( "${files_to_delete[@]}" "$backup" )
-          #;;
-      #esac
+    if [ $snapshot_timestamp -lt $delete_timestamp ] ; then
+      files_to_delete=( "${files_to_delete[@]}" "$backup" )
     fi
-  done
 
-  # Delete files
-  for file_to_delete in "${files_to_delete[@]}" ; do
-    rm -rf $file_to_delete
-    if [ $? = 0 ] ; then
-      echo "Old snapshot deleted"
-    else
-      # Write in some email code here.
-      echo "Unable to delete the old snapshot. Exiting." ; exit $?
-    fi
-  done
-fi
+  fi
+done
+
+# Delete files
+for file_to_delete in "${files_to_delete[@]}" ; do
+  rm -rf $file_to_delete
+  if [ $? = 0 ] ; then
+    $ECHO "Old snapshot deleted"
+  else
+    # Write in some email code here.
+    $ECHO "Unable to delete the old snapshot. Exiting." ; exit $?
+  fi
+done
