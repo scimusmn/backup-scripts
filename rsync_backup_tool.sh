@@ -219,6 +219,11 @@ for backup in $DEST_PATH/* ; do
     snapshot_date=${snapshot_date#*_}
     # Convert the file date string to unix time
     snapshot_timestamp=`date_convert $snapshot_date`
+    if [ $? -ne 0 ] ; then
+      $ECHO "There was an error with the date_convert utility."
+      exit 1
+    fi
+
 
     case "$snapshot_type" in
       "HOURLY" )
