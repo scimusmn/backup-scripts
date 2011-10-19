@@ -77,5 +77,6 @@ int main ( int argc, char *argv[] )
       /*printf("Argv 1 = %s\n", argv[1]);*/
     }
   }
+  return 0;
 }
 
