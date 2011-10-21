@@ -137,13 +137,17 @@ fi
 $ECHO 'Syncing the backup with the server'
 
 # rsync the files with these possible options
-#   -a (archive) Tells rsync to copy over, times, groups, symlinks, and traverses directories
-#   -v (verbose)
-#   -z (compress) Use compression in the transfer
-#   -P (partial and progress) Save partially transfered files, and show transfer progress
-#   -e ssh Use SSH to do the transfer
+#   -a         (archive) Tells rsync to copy over, times, groups, symlinks, and
+#              traverses directories
+#   -v         (verbose)
+#   -z         (compress) Use compression in the transfer
+#   -P         (partial and progress) Save partially transfered files, and show
+#              transfer progress
+#   -e         ssh Use SSH to do the transfer
+#   --delete   Delete files from the local backup that have been deleted from
+#              the remote source
 if [ "$REMOTE_SOURCE" ] ; then
-  $RSYNC -avz -P -e ssh $REMOTE_SOURCE $DEST_PATH
+  $RSYNC -avz -P -e ssh --delete $REMOTE_SOURCE $DEST_PATH
   # Get the name of the local folder where the rsync'ed files live
   # This is used when we archive this later.
   RSYNC_FOLDER=${REMOTE_SOURCE##*/}
