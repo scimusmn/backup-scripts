@@ -122,7 +122,6 @@ if [[ ! -d $DEST_PATH ]] ; then
   else
     # Use the alternate destination for archiving.
     DEST_PATH=$ALT_DEST_PATH
-    # When using the alternate paths, don't delete old backups
   fi
 else
   $ECHO "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -143,8 +142,8 @@ $ECHO 'Syncing the backup with the server'
 #   -z         (compress) Use compression in the transfer
 #   -P         (partial and progress) Save partially transfered files, and show
 #              transfer progress
-#   -e         ssh Use SSH to do the transfer
-#   --delete   Delete files from the local backup that have been deleted from
+#   -e ssh     use SSH to do the transfer
+#   --delete   delete files from the local backup that have been deleted from
 #              the remote source
 if [ "$REMOTE_SOURCE" ] ; then
   $RSYNC -avz -P -e ssh --delete $REMOTE_SOURCE $DEST_PATH
