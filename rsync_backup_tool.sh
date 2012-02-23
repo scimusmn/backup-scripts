@@ -14,6 +14,9 @@
 # https://help.ubuntu.com/8.04/serverguide/C/backups-shellscripts-rotation.html
 ############################################################
 
+# Quit on any errors
+set -e
+
 ECHO="$(which echo)"
 TAR="$(which tar)"
 RSYNC="$(which rsync)"
