@@ -14,9 +14,6 @@
 # https://help.ubuntu.com/8.04/serverguide/C/backups-shellscripts-rotation.html
 ############################################################
 
-# Quit on any errors
-set -e
-
 ECHO="$(which echo)"
 TAR="$(which tar)"
 RSYNC="$(which rsync)"
@@ -150,11 +147,21 @@ $ECHO 'Syncing the backup with the server'
 #              the remote source
 if [ "$REMOTE_SOURCE" ] ; then
   $RSYNC -avz -P -e ssh --delete $REMOTE_SOURCE $DEST_PATH
+  if [ "$?" -ne 0 ]
+    then echo "Rsync failed."
+      exit 1
+  fi
+
   # Get the name of the local folder where the rsync'ed files live
   # This is used when we archive this later.
   RSYNC_FOLDER=${REMOTE_SOURCE##*/}
 elif [ "$LOCAL_SOURCE_PATH" ] ; then
   $RSYNC -avz -P $LOCAL_SOURCE_PATH $DEST_PATH
+  if [ "$?" -ne 0 ]
+    then echo "Rsync failed."
+      exit 1
+  fi
+
   RSYNC_FOLDER=${LOCAL_SOURCE_PATH##*/}
 fi
 
@@ -195,6 +202,10 @@ fi
 
 # Create archive
 $TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_FOLDER
+if [ "$?" -ne 0 ]
+  then echo "Compression with tar failed."
+    exit 1
+fi
 
 ############################################################
 # Delete old snapshots
