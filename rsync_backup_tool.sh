@@ -42,16 +42,9 @@ ARGUMENTS:
        Example:
        /path/to/local/backup/source
 
+       REQUIRED
   -t   Backup destination path. Rsync and snapshot archives
        will be stored here.
-
-       OPTIONAL
-  -a   Alternate backup destination if primary path isn't
-       available.
-       This is provided for when the local path is a mounted
-       drive that may or may not exist at the time the script
-       is run.
-
   -n   A descriptive filename for the backup (no spaces)
        Example:
        apache_config
@@ -59,6 +52,13 @@ ARGUMENTS:
   -d   Number of daily backups to retain.
   -w   Number of weekly backups to retain.
   -m   Number of monthly backups to retain.
+
+       OPTIONAL
+  -a   Alternate backup destination if primary path isn't
+       available.
+       This is provided for when the local path is a mounted
+       drive that may or may not exist at the time the script
+       is run.
 
 EOF
 }
