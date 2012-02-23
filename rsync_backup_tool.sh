@@ -200,12 +200,26 @@ $TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_
 # Delete old snapshots
 ############################################################
 
-# Create the matching date strings X , days, weeks, months back
-HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
-DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
-WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
-WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
-MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
+# If you are on BSD (FreeBSD, Darwin, OSX) use the -v
+# date flags.
+man date | head -n 1 | grep -q BSD
+if [ "$?" == "0" ]; then
+  # Create the matching date strings X , days, weeks, months back
+  HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
+  DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
+  WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
+  WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
+  MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
+# If you are on GNU Linux (CentOS, RHEL, Ubuntu), then use
+# the -d date flags
+else
+  # Create the matching date strings X , days, weeks, months back
+  HOURLY_DELETE_TIME=$(date --date="${HOURLY_COUNT} hours ago" $DATE_STRING)
+  DAILY_DELETE_TIME=$(date --date="${DAILY_COUNT} days ago" $DATE_STRING)
+  WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
+  WEEKLY_DELETE_TIME=$(date --date="${WEEKLY_COUNT_IN_DAYS} days ago" $DATE_STRING)
+  MONTHLY_DELETE_TIME=$(date --date="${MONTHLY_COUNT} months ago" $DATE_STRING)
+fi
 
 # Loop through all of the files and populate an array of files to be deleted
 declare -a files_to_delete
