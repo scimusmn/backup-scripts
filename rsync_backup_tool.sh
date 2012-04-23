@@ -42,16 +42,9 @@ ARGUMENTS:
        Example:
        /path/to/local/backup/source
 
+       REQUIRED
   -t   Backup destination path. Rsync and snapshot archives
        will be stored here.
-
-       OPTIONAL
-  -a   Alternate backup destination if primary path isn't
-       available.
-       This is provided for when the local path is a mounted
-       drive that may or may not exist at the time the script
-       is run.
-
   -n   A descriptive filename for the backup (no spaces)
        Example:
        apache_config
@@ -59,6 +52,13 @@ ARGUMENTS:
   -d   Number of daily backups to retain.
   -w   Number of weekly backups to retain.
   -m   Number of monthly backups to retain.
+
+       OPTIONAL
+  -a   Alternate backup destination if primary path isn't
+       available.
+       This is provided for when the local path is a mounted
+       drive that may or may not exist at the time the script
+       is run.
 
 EOF
 }
@@ -147,11 +147,21 @@ $ECHO 'Syncing the backup with the server'
 #              the remote source
 if [ "$REMOTE_SOURCE" ] ; then
   $RSYNC -avz -P -e ssh --delete $REMOTE_SOURCE $DEST_PATH
+  if [ "$?" -ne 0 ]
+    then echo "Rsync failed."
+      exit 1
+  fi
+
   # Get the name of the local folder where the rsync'ed files live
   # This is used when we archive this later.
   RSYNC_FOLDER=${REMOTE_SOURCE##*/}
 elif [ "$LOCAL_SOURCE_PATH" ] ; then
   $RSYNC -avz -P $LOCAL_SOURCE_PATH $DEST_PATH
+  if [ "$?" -ne 0 ]
+    then echo "Rsync failed."
+      exit 1
+  fi
+
   RSYNC_FOLDER=${LOCAL_SOURCE_PATH##*/}
 fi
 
@@ -192,17 +202,35 @@ fi
 
 # Create archive
 $TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_FOLDER
+if [ "$?" -ne 0 ]
+  then echo "Compression with tar failed."
+    exit 1
+fi
 
 ############################################################
 # Delete old snapshots
 ############################################################
 
-# Create the matching date strings X , days, weeks, months back
-HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
-DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
-WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
-WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
-MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
+# If you are on BSD (FreeBSD, Darwin, OSX) use the -v
+# date flags.
+man date | head -n 1 | grep -q BSD
+if [ "$?" == "0" ]; then
+  # Create the matching date strings X , days, weeks, months back
+  HOURLY_DELETE_TIME=$(date -v-${HOURLY_COUNT}H $DATE_STRING)
+  DAILY_DELETE_TIME=$(date -v-${DAILY_COUNT}d $DATE_STRING)
+  WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
+  WEEKLY_DELETE_TIME=$(date -v-${WEEKLY_COUNT_IN_DAYS}d $DATE_STRING)
+  MONTHLY_DELETE_TIME=$(date -v-${MONTHLY_COUNT}m $DATE_STRING)
+# If you are on GNU Linux (CentOS, RHEL, Ubuntu), then use
+# the -d date flags
+else
+  # Create the matching date strings X , days, weeks, months back
+  HOURLY_DELETE_TIME=$(date --date="${HOURLY_COUNT} hours ago" $DATE_STRING)
+  DAILY_DELETE_TIME=$(date --date="${DAILY_COUNT} days ago" $DATE_STRING)
+  WEEKLY_COUNT_IN_DAYS=$(($WEEKLY_COUNT*7))
+  WEEKLY_DELETE_TIME=$(date --date="${WEEKLY_COUNT_IN_DAYS} days ago" $DATE_STRING)
+  MONTHLY_DELETE_TIME=$(date --date="${MONTHLY_COUNT} months ago" $DATE_STRING)
+fi
 
 # Loop through all of the files and populate an array of files to be deleted
 declare -a files_to_delete
