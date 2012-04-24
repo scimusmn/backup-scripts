@@ -59,18 +59,23 @@ ARGUMENTS:
        This is provided for when the local path is a mounted
        drive that may or may not exist at the time the script
        is run.
+  -u   Uncompressed.
+       Use this flag if you would like your snapshots to be
+       tar'ed without using gzip. Snapshots will be saved
+       as .tar files.
 
 EOF
 }
 
 # Get the command line arguments.
-while getopts ":r:l:t:a:n:h:d:w:m:" opt ; do
+while getopts ":r:l:t:a:un:h:d:w:m:" opt ; do
   case $opt in
     r ) REMOTE_SOURCE=$OPTARG ;;
     l ) LOCAL_SOURCE_PATH=$OPTARG ;;
     t ) DEST_PATH=$OPTARG ;;
 
     a ) ALT_DEST_PATH=$OPTARG ;;
+    u ) UNCOMPRESS=1 ;;
 
     n ) ARCHIVE_NAME=$OPTARG ;;
     h ) HOURLY_COUNT=$(($OPTARG)) ;;
@@ -200,8 +205,17 @@ else
   fi
 fi
 
+# Find of if we should gzip the files or not
+if ( [ -z "$UNCOMPRESS" ] ) ; then
+  FLAGS="czvf"
+  EXT="tgz"
+else
+  FLAGS="cvf"
+  EXT="tar"
+fi
+
 # Create archive
-$TAR czvf ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.tgz $DEST_PATH/$RSYNC_FOLDER
+$TAR ${FLAGS} ${DEST_PATH}/${ARCHIVE_NAME}_${NOW}_${BAK_TYPE}.${EXT} $DEST_PATH/$RSYNC_FOLDER
 if [ "$?" -ne 0 ]
   then echo "Compression with tar failed."
     exit 1
