@@ -161,7 +161,7 @@ if [ "$REMOTE_SOURCE" ] ; then
   # This is used when we archive this later.
   RSYNC_FOLDER=${REMOTE_SOURCE##*/}
 elif [ "$LOCAL_SOURCE_PATH" ] ; then
-  $RSYNC -avz -P $LOCAL_SOURCE_PATH $DEST_PATH
+  $RSYNC -avz -P --delete $LOCAL_SOURCE_PATH $DEST_PATH
   if [ "$?" -ne 0 ]
     then echo "Rsync failed."
       exit 1
